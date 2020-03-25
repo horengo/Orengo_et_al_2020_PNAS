@@ -2,9 +2,8 @@
 // accompany the paper: 
 
 // Orengo, H.A.; Conesa, F.C.; Garcia-Molsosa, A.; Lobo, A.; Green, A.S.; Madella, M. and Petrie,
-// C.A. 2019. 'Living on the edge of the desert: automated detection of archaeological mounds in 
-// Cholistan (Pakistan) using machine learning classification of multi-sensor and multi-temporal
-// satellite data'submitted to PNAS.
+// C.A. 2020. 'Automated detection of archaeological mounds using machine learning classification
+// of multi-sensor and multi-temporal satellite data'submitted to PNAS.
 
 //                ------------- ooo -------------
 
@@ -33,15 +32,16 @@
 //          vegetation, desert, water, and so on) for the 'other' layer. After obtaining the results
 //          of the classi-fication use these results to select more training polygons to improve the
 //          results in the next iterations of the algorithm.
-// 3. The images resulting from this script can be transferred to your Google Drive running the
-//    analysis from the 'Tasks' tab on the top right of the screen and selecting the Drive option.
-// 4. No outputs of kernel-based results (such as the filtering of single high-probability pixels
-//    and the vectorisation of the results)have been included in the map layer as EE executes these
-//    using the screen resolution. To obtain the raster resulting from the morphologic filter and
-//    its vectorisation run the analysis on the 'Tasks' tab. This sends the analysis to run on the
-//    server at full resolution.
+// 3. The images resulting from this script can be transferred to your Assets or Google Drive running
+//    the analysis from the 'Tasks' tab on the top right of the screen and selecting the Drive option.
+// 4. No outputs of kernel-based results (filtering of single high-probability pixels and vectorisation
+//    of the results) have been included in the map layer as EE executes these using the screen
+//    resolution. To obtain the raster resulting from the morphologic filter and its vectorisation run
+//    the analysis on the 'Tasks' tab. This sends the analysis to run on the server at full resolution.
+//    Before running the filtering or vecotrisation process read the -- WARNING -- in lines 246-250.
 // 5. Specific instructions of how the algorithm works have been included within the code, please,
 //    read these carefully and consult the paper's text to understand how to best apply it.
+
 
 //                ------------- ooo -------------
 
@@ -244,6 +244,10 @@ Map.addLayer(classified, {min: 0.5, max: 1}, iteration); // It can take several 
 
 
 // ////////////////////// FILTER OF SMALL FALSE POSITIVES ////////////////////////
+// WARNING: This part of the code is included but not used in the paper. Many mounds are partially buried by sand
+// and present elongated shapes that could be filtered out as they do not present enough contiguous high-probability
+// pixels. Only use the filtering process in areas were your features (in this case mounds) are larger than the
+// selected kernel size.
 
 // Threshold of the percentage of the RF classification
 var gt = 0.55; // Probablity value selected as threshold
@@ -264,7 +268,7 @@ var vectors = filtered.mask(filtered).reduceToVectors({geometryType: 'polygon', 
 // ////////////////////// EXPORT OF RESULTING DATASETS ////////////////////////
 
 // Data exports as assets so they can be included and visualises in next iterations
-Export.image.toAsset({ // Also possible to export to Google Drive, select when dialogue appears
+Export.image.toAsset({ // It is also possible to export to Google Drive, just select the option in the dialogue
   image: classified,
   description: 'RF128_S1-S2_prob_' + iteration,
   scale: 10,
@@ -272,15 +276,18 @@ Export.image.toAsset({ // Also possible to export to Google Drive, select when d
   region: geometry
 });
 
+// Before using make sure you have read the WARNING in 246-250
 Export.image.toAsset({ // Also possible to export to Google Drive, select when dialogue appears
   image: filtered,
-  description: 'Filtered_rf128_s1-s2_prob_' + iteration + '_filter' + gt*100 + 'med_r' + r,
+  description: 'Filtered_rf128_s1-s2_prob_' + iteration + '_filter' + Math.round(gt*100) + 'med_r' + r,
   scale: 10,
   maxPixels: 1e12,
   region: geometry
 });
 
+// This vector layer employs the results of the filtering process, before exporting and using the results make sure
+// you have read the WARNING in lines 246-250
 Export.table.toAsset({ // Also possible to export to Google Drive, select when dialogue appears
   collection: vectors,
-  description:'Vectorised_Sites_Cho_RF128_' + iteration + '_filter' + gt*100 + 'med_r' + r,
+  description:'Vectorised_Sites_Cho_RF128_' + iteration + '_filter' + Math.round(gt*100) + 'med_r' + r,
 });
