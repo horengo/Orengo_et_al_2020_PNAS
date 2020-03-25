@@ -30,7 +30,7 @@
 //          and a value of 0 for the 'other' layer; c) draw polygons delimiting sites you will use
 //          as training data for the 'sites' layer and any other type of landcover present (such as
 //          vegetation, desert, water, and so on) for the 'other' layer. After obtaining the results
-//          of the classi-fication use these results to select more training polygons to improve the
+//          of the classification use these results to select more training polygons to improve the
 //          results in the next iterations of the algorithm.
 // 3. The images resulting from this script can be transferred to your Assets or Google Drive running
 //    the analysis from the 'Tasks' tab on the top right of the screen and selecting the Drive option.
@@ -38,7 +38,7 @@
 //    of the results) have been included in the map layer as EE executes these using the screen
 //    resolution. To obtain the raster resulting from the morphologic filter and its vectorisation run
 //    the analysis on the 'Tasks' tab. This sends the analysis to run on the server at full resolution.
-//    Before running the filtering or vecotrisation process read the -- WARNING -- in lines 246-250.
+//    Before running the filtering or vectorisation process read the -- WARNING -- in lines 246-250.
 // 5. Specific instructions of how the algorithm works have been included within the code, please,
 //    read these carefully and consult the paper's text to understand how to best apply it.
 
@@ -246,7 +246,7 @@ Map.addLayer(classified, {min: 0.5, max: 1}, iteration); // It can take several 
 // ////////////////////// FILTER OF SMALL FALSE POSITIVES ////////////////////////
 // WARNING: This part of the code is included but not used in the paper. Many mounds are partially buried by sand
 // and present elongated shapes that could be filtered out as they do not present enough contiguous high-probability
-// pixels. Only use the filtering process in areas were your features (in this case mounds) are larger than the
+// pixels. Only use the filtering process in areas where your features (in this case mounds) are larger than the
 // selected kernel size.
 
 // Threshold of the percentage of the RF classification
