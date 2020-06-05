@@ -255,7 +255,7 @@ Map.addLayer(classified, {min: 0.55, max: 1}, iteration); // It can take several
 // running all the code above.
 
 // Threshold of the percentage of the RF classification
-var gt = 0.55; // Probablity value selected as threshold
+var gt = 0.55; // Probability value selected as threshold
 var threshold = classified.select('classification').gt(gt);
 
 // Median filter to eliminate isolated high probability pixels
