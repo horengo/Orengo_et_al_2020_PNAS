@@ -38,7 +38,7 @@
 //    of the results) have been included in the map layer as EE executes these using the screen
 //    resolution. To obtain the raster resulting from the morphologic filter and its vectorisation run
 //    the analysis on the 'Tasks' tab. This sends the analysis to run on the server at full resolution.
-//    Before running the filtering or vectorisation process read the -- WARNING -- in lines 246-250.
+//    Before running the filtering or vectorisation process read the -- WARNING -- in lines 249-255.
 // 5. Specific instructions of how the algorithm works have been included within the code, please,
 //    read these carefully and consult the paper's text to understand how to best apply it.
 
@@ -51,7 +51,7 @@
 Map.setCenter(72.0428, 28.8447, 9);
 
 // Indicate here iteration number and comments for naming the results
-var iteration = 'it03published';
+var iteration = 'it03';
 
 // Create a polygon delimiting the AOI. In our case it is limited by the India-Pakistan border on
 // its east side (as currently defined by EE).
@@ -114,7 +114,8 @@ print('Study area', geometry.area().divide(1000 * 1000), 'km2'); // AOI area km2
 
 // Load the Sentinel-1 ImageCollection
 var s1 = ee.ImageCollection('COPERNICUS/S1_GRD')
-  .filterBounds(geometry);
+  .filterBounds(geometry)
+  .filterDate('2014-10-03', '2020-06-05');
   
 // Print total Sentinel 1 images employed
 print('Sentinel 1 images:', s1);
@@ -174,6 +175,7 @@ function maskS2clouds(image) {
 // Load Sentinel-2 TOA reflectance data.
 var S2_col = ee.ImageCollection('COPERNICUS/S2')
     .filterBounds(geometry)
+    .filterDate('2015-06-23', '2020-06-05')
     // Pre-filter to get less cloudy granules.
     .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20))
     .map(maskS2clouds);
@@ -240,7 +242,7 @@ var classifier = ee.Classifier.randomForest({'numberOfTrees':128})
 var classified = Composite.select(bands).classify(classifier);
 
 // Add the resulting classified layer to the Map Window below
-Map.addLayer(classified, {min: 0.5, max: 1}, iteration); // It can take several minutes to load
+Map.addLayer(classified, {min: 0.55, max: 1}, iteration); // It can take several minutes to load
 
 
 // ////////////////////// FILTER OF SMALL FALSE POSITIVES ////////////////////////
@@ -248,6 +250,9 @@ Map.addLayer(classified, {min: 0.5, max: 1}, iteration); // It can take several 
 // and present elongated shapes that could be filtered out as they do not present enough contiguous high-probability
 // pixels. Only use the filtering process in areas where your features (in this case mounds) are larger than the
 // selected kernel size.
+// ALSO: the vectorisation process can produce an error related to the projection of the data or lack of memory
+// this can be solved by exporting the filtered layer as an asset and apply the filter to the asset directly without
+// running all the code above.
 
 // Threshold of the percentage of the RF classification
 var gt = 0.55; // Probablity value selected as threshold
@@ -270,24 +275,24 @@ var vectors = filtered.mask(filtered).reduceToVectors({geometryType: 'polygon', 
 // Data exports as assets so they can be included and visualises in next iterations
 Export.image.toAsset({ // It is also possible to export to Google Drive, just select the option in the dialogue
   image: classified,
-  description: 'RF128_S1-S2_prob_' + iteration,
+  description: 'rf128_S1-S2_prob_' + iteration,
   scale: 10,
   maxPixels: 1e12,
   region: geometry
 });
 
-// Before using make sure you have read the WARNING in 246-250
+// Before using make sure you have read the WARNING in 249-255
 Export.image.toAsset({ // Also possible to export to Google Drive, select when dialogue appears
   image: filtered,
-  description: 'Filtered_rf128_s1-s2_prob_' + iteration + '_filter' + Math.round(gt*100) + 'med_r' + r,
+  description: 'rf128_s1-s2_prob_' + iteration + '_filter' + Math.round(gt*100) + '_med_r' + r,
   scale: 10,
   maxPixels: 1e12,
   region: geometry
 });
 
 // This vector layer employs the results of the filtering process, before exporting and using the results make sure
-// you have read the WARNING in lines 246-250
+// you have read the WARNING in lines 249-255
 Export.table.toAsset({ // Also possible to export to Google Drive, select when dialogue appears
   collection: vectors,
-  description:'Vectorised_Sites_Cho_RF128_' + iteration + '_filter' + Math.round(gt*100) + 'med_r' + r,
+  description:'vector_rf128_s1-s2_prob_' + iteration + '_filter' + Math.round(gt*100) + '_med_r' + r,
 });
